@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#12222b">
+<title>Prospection Structures Sociales — 63 / 03</title>
+<style>
+  :root{
+    --ink:#12222b; --ink-2:#1c313c; --paper:#f5f3ee; --paper-line:#e4e0d6;
+    --muted:#6b7a80; --heat:#e0642c; --heat-soft:#f6d9c9; --deep:#1f6f6a; --deep-soft:#d6e9e7;
+    --done:#8a9aa0; --white:#ffffff; --overdue:#c2451f; --win:#1a6b30;
+    --cat-asile:#e0642c; --cat-chrs:#c2451f; --cat-adoma:#1f6f6a; --cat-enfance:#7b5ea7; --cat-fjt:#2f80b8; --cat-asso:#8a7d3f;
+    --data: ui-monospace, "SF Mono", "Roboto Mono", Menlo, monospace;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--ink);color:var(--ink);-webkit-font-smoothing:antialiased;}
+
+  header{position:sticky;top:0;z-index:50;background:var(--ink);color:var(--paper);padding:calc(env(safe-area-inset-top) + 14px) 16px 12px;border-bottom:1px solid #2b4450;}
+  .titlerow{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+  h1{font-size:19px;line-height:1.1;margin:0;font-weight:800;letter-spacing:-.02em;}
+  h1 span{color:var(--heat);}
+  .sub{font-size:11.5px;color:#9db2ba;margin-top:3px;letter-spacing:.02em;}
+  .gear{background:var(--ink-2);border:1px solid #2f4b58;color:var(--paper);border-radius:10px;width:38px;height:38px;font-size:17px;cursor:pointer;flex:0 0 auto;}
+  .gear:active{transform:scale(.95);}
+
+  .searchrow{display:flex;gap:8px;margin-top:12px;}
+  .search{flex:1;display:flex;align-items:center;gap:8px;background:var(--ink-2);border:1px solid #2f4b58;border-radius:11px;padding:10px 12px;}
+  .search input{flex:1;background:transparent;border:0;outline:0;color:var(--paper);font-size:16px;}
+  .search input::placeholder{color:#6f868f;}
+  .geo{display:flex;align-items:center;justify-content:center;gap:6px;background:var(--heat);color:#2a1206;border:0;border-radius:11px;padding:0 14px;font-weight:800;font-size:13px;min-width:104px;cursor:pointer;}
+  .geo.on{background:var(--deep);color:#eafffb;}
+  .geo:active{transform:scale(.97);}
+
+  .relbar{margin-top:11px;display:flex;align-items:center;gap:8px;background:#3a1e0f;border:1px solid #6b3a1f;border-radius:11px;padding:9px 12px;font-size:13px;color:#ffcbab;cursor:pointer;}
+  .relbar.none{background:var(--ink-2);border-color:#2f4b58;color:#8ba4ac;cursor:default;}
+  .relbar b{color:#fff;font-family:var(--data);}
+  .relbar .go{margin-left:auto;font-weight:800;color:#ffd9c4;}
+
+  .filters{display:flex;gap:7px;overflow-x:auto;padding:11px 16px 12px;background:var(--ink);border-bottom:1px solid #2b4450;-ms-overflow-style:none;scrollbar-width:none;}
+  .filters::-webkit-scrollbar{display:none;}
+  .chip{flex:0 0 auto;border:1px solid #38545f;background:transparent;color:#b9cbd2;padding:7px 13px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  .chip.active{background:var(--paper);color:var(--ink);border-color:var(--paper);}
+  .chip.rel.active{background:var(--heat);color:#2a1206;border-color:var(--heat);}
+  .chip .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle;}
+
+  main{padding:12px 12px calc(env(safe-area-inset-bottom) + 28px);background:#0e1b22;min-height:60vh;}
+  .card{background:var(--paper);border-radius:14px;margin-bottom:11px;overflow:hidden;border-left:5px solid var(--muted);box-shadow:0 1px 0 rgba(0,0,0,.25);}
+  .card.asile{border-left-color:var(--cat-asile);} .card.chrs{border-left-color:var(--cat-chrs);}
+  .card.adoma{border-left-color:var(--cat-adoma);} .card.enfance{border-left-color:var(--cat-enfance);}
+  .card.fjt{border-left-color:var(--cat-fjt);} .card.asso{border-left-color:var(--cat-asso);}
+  .card.won{border-left-color:var(--win);}
+  .card.done{opacity:.62;border-left-color:var(--done);}
+  .card.done .name{text-decoration:line-through;text-decoration-color:var(--done);}
+
+  .cardtop{padding:12px 13px 10px;}
+  .badges{display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap;}
+  .tag{font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:3px 7px;border-radius:5px;color:var(--white);}
+  .tag.dep{background:var(--ink);}
+  .tag.asile{background:var(--cat-asile);} .tag.chrs{background:var(--cat-chrs);} .tag.adoma{background:var(--cat-adoma);}
+  .tag.enfance{background:var(--cat-enfance);} .tag.fjt{background:var(--cat-fjt);} .tag.asso{background:var(--cat-asso);}
+  .tag.heb{background:var(--heat-soft);color:#7a2f0e;}
+  .tag.won{background:var(--win);}
+  .dist{margin-left:auto;font-family:var(--data);font-size:12.5px;font-weight:700;color:var(--deep);background:var(--deep-soft);padding:3px 8px;border-radius:6px;}
+  .name{font-size:16.5px;font-weight:800;line-height:1.2;letter-spacing:-.01em;margin:1px 0 5px;}
+  .addr{font-size:13.5px;color:#4a5b62;line-height:1.35;}
+  .addr .city{color:var(--ink);font-weight:600;}
+  .tel{font-family:var(--data);font-size:13.5px;color:#4a5b62;margin-top:4px;}
+  .tel.none{color:#b04a2a;}
+
+  /* statut prospection */
+  .pstat{display:flex;align-items:center;gap:7px;padding:8px 13px;font-size:12.5px;font-weight:700;border-top:1px solid var(--paper-line);background:#efece4;}
+  .pstat .pill{font-family:var(--data);font-size:11px;padding:2px 7px;border-radius:5px;}
+  .pstat.todo{background:#fbe6da;color:#7a2f0e;} .pstat.todo .pill{background:var(--heat);color:#fff;}
+  .pstat.wait{color:#4a5b62;} .pstat.wait .pill{background:#d8d3c7;color:#4a5b62;}
+  .pstat.win{background:#dff0e4;color:#14562a;} .pstat.win .pill{background:var(--win);color:#fff;}
+  .pstat.new{color:#4a5b62;} .pstat.new .pill{background:var(--deep);color:#fff;}
+
+  .actions{display:flex;border-top:1px solid var(--paper-line);}
+  .actions a,.actions button{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 4px;font-size:13px;font-weight:700;border:0;background:transparent;color:var(--ink);cursor:pointer;text-decoration:none;border-right:1px solid var(--paper-line);}
+  .actions>*:last-child{border-right:0;}
+  .actions .call{color:#1a6b30;} .actions .map{color:var(--deep);} .actions .mail{color:#8a7d3f;}
+  .actions .mail.disabled{color:#b6b1a4;}
+  .actions a:active,.actions button:active{background:#ece8df;}
+  .actions .ic{font-size:15px;}
+
+  .more{display:none;padding:11px 13px 13px;background:#efece4;border-top:1px solid var(--paper-line);}
+  .more.open{display:block;}
+  .fieldlbl{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:0 0 4px;}
+  .more input,.more textarea{width:100%;background:var(--white);border:1px solid #d8d3c7;border-radius:9px;padding:9px 10px;font-size:15px;color:var(--ink);outline:0;font-family:inherit;}
+  .more input:focus,.more textarea:focus{border-color:var(--deep);}
+  .more textarea{margin-top:9px;min-height:52px;resize:vertical;}
+
+  /* bloc séquence */
+  .seq{margin-top:12px;background:var(--white);border:1px solid #e0dccf;border-radius:11px;padding:11px;}
+  .seq h4{margin:0 0 8px;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);}
+  .steps{display:flex;gap:5px;margin-bottom:10px;}
+  .step{flex:1;text-align:center;font-size:10px;font-weight:800;padding:6px 2px;border-radius:7px;background:#eee9df;color:#9a958a;line-height:1.25;}
+  .step.done{background:var(--deep);color:#eafffb;}
+  .step.next{background:var(--heat);color:#2a1206;}
+  .seqrow{display:flex;gap:7px;}
+  .seqrow button{flex:1;border-radius:9px;padding:11px 6px;font-size:13px;font-weight:800;border:0;cursor:pointer;}
+  .b-open{background:var(--ink);color:var(--paper);} .b-copy{background:#d8d3c7;color:var(--ink);}
+  .b-sent{background:var(--heat);color:#2a1206;width:100%;margin-top:8px;padding:11px;border-radius:9px;font-size:13px;font-weight:800;border:0;cursor:pointer;}
+  .seq-two{display:flex;gap:7px;margin-top:8px;}
+  .b-win{flex:1;background:var(--win);color:#eafff0;border:0;border-radius:9px;padding:10px;font-size:12.5px;font-weight:800;cursor:pointer;}
+  .b-reset{flex:0 0 auto;background:transparent;border:1px solid #d8d3c7;color:var(--muted);border-radius:9px;padding:10px 12px;font-size:12.5px;font-weight:700;cursor:pointer;}
+  .hint{font-size:11.5px;color:var(--muted);margin:8px 2px 0;line-height:1.4;}
+
+  .toggle{display:block;width:100%;text-align:center;padding:9px;background:transparent;border:0;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.03em;cursor:pointer;}
+  .toggle:active{color:var(--ink);}
+
+  .empty{color:#9db2ba;text-align:center;padding:48px 20px;font-size:14px;line-height:1.5;}
+  footer{padding:18px 20px calc(env(safe-area-inset-bottom) + 24px);color:#5f7680;font-size:11px;text-align:center;line-height:1.6;background:#0e1b22;}
+
+  /* modal réglages */
+  .modal{position:fixed;inset:0;z-index:100;background:rgba(6,14,18,.72);display:none;align-items:flex-end;}
+  .modal.open{display:flex;}
+  .sheet{width:100%;max-height:90vh;overflow:auto;background:var(--paper);border-radius:18px 18px 0 0;padding:20px 18px calc(env(safe-area-inset-bottom) + 22px);}
+  .sheet h2{margin:0 0 4px;font-size:18px;font-weight:800;}
+  .sheet .lead{font-size:12.5px;color:var(--muted);margin:0 0 16px;line-height:1.45;}
+  .sheet label{display:block;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:12px 0 4px;}
+  .sheet input{width:100%;background:var(--white);border:1px solid #d8d3c7;border-radius:10px;padding:11px;font-size:16px;color:var(--ink);outline:0;}
+  .sheet input:focus{border-color:var(--deep);}
+  .rowck{display:flex;align-items:center;gap:9px;margin-top:14px;}
+  .rowck input{width:auto;}
+  .rowck span{font-size:13px;color:var(--ink);}
+  .sheet .save{width:100%;margin-top:18px;background:var(--ink);color:var(--paper);border:0;border-radius:12px;padding:14px;font-size:15px;font-weight:800;cursor:pointer;}
+  .sheet .close{width:100%;margin-top:9px;background:transparent;border:0;color:var(--muted);padding:8px;font-size:13px;font-weight:700;cursor:pointer;}
+  .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 22px);transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:11px 18px;border-radius:11px;font-size:13.5px;font-weight:700;z-index:200;opacity:0;transition:opacity .2s;pointer-events:none;}
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<header>
+  <div class="titlerow">
+    <div>
+      <h1>Structures <span>sociales</span> · 63 / 03</h1>
+      <div class="sub">Prospection punaises de lit — traitement thermique</div>
+    </div>
+    <button class="gear" id="gearBtn" aria-label="Réglages">⚙︎</button>
+  </div>
+  <div class="searchrow">
+    <div class="search"><span>🔎</span><input id="q" type="search" placeholder="Nom, ville…" autocomplete="off" autocapitalize="off"></div>
+    <button class="geo" id="geoBtn">📍 Proximité</button>
+  </div>
+  <div class="relbar none" id="relbar"><span>Relances à envoyer</span> <b id="relCount">0</b><span class="go" id="relGo" style="display:none">Voir →</span></div>
+</header>
+
+<div class="filters" id="deps"></div>
+<div class="filters" id="cats" style="border-bottom:1px solid #2b4450;"></div>
+
+<main id="list"></main>
+
+<footer>
+  Données Google Maps · vérifie avant déplacement.<br>
+  Séquence, emails &amp; réglages enregistrés sur cet appareil.
+</footer>
+
+<!-- Modal réglages -->
+<div class="modal" id="modal">
+  <div class="sheet">
+    <h2>Ta signature</h2>
+    <p class="lead">Renseignée une fois, elle est injectée dans tous les mails de prospection. Ajoute au minimum ton téléphone et ton email pour des messages complets.</p>
+    <label>Nom / prénom</label>
+    <input id="cf_name" placeholder="Idriss Ouali">
+    <label>Société / marque</label>
+    <input id="cf_company" placeholder="ZAPEM — Dédale et Associés">
+    <label>Téléphone</label>
+    <input id="cf_phone" inputmode="tel" placeholder="06 XX XX XX XX">
+    <label>Email d'envoi</label>
+    <input id="cf_email" inputmode="email" autocapitalize="off" placeholder="contact@zapem.fr">
+    <label>Site web (optionnel)</label>
+    <input id="cf_site" inputmode="url" autocapitalize="off" placeholder="www.zapem.fr">
+    <div class="rowck">
+      <input type="checkbox" id="cf_stop" checked>
+      <span>Ajouter une ligne de désinscription (recommandé en B2B)</span>
+    </div>
+    <button class="save" id="cf_save">Enregistrer</button>
+    <button class="close" id="cf_close">Fermer</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------- Données ---------------- */
+const DATA = [
+  {n:"Forum réfugiés — CAES Clermont-Ferrand",c:"asile",d:"63",v:"Clermont-Ferrand",a:"5 Rue d'Effiat, 63100",t:"+33443971980",lat:45.7855057,lng:3.1038444,pid:"ChIJtWK0H_8b90cRjcuYprVyNX8",heb:true},
+  {n:"Forum réfugiés — CHUDA Clermont-Ferrand",c:"asile",d:"63",v:"Clermont-Ferrand",a:"5 Rue du Torpilleur Sirocco, 63100",t:"+33443118016",lat:45.8152447,lng:3.1078342,pid:"ChIJjxnBeK8d90cRTj6ZElN_5T0",heb:true},
+  {n:"Forum réfugiés — Service ELIR 63",c:"asile",d:"63",v:"Clermont-Ferrand",a:"5 Rue du Torpilleur Sirocco, 63100",t:"+33473140469",lat:45.815258,lng:3.1078202,pid:"ChIJwxAUzzgb90cRQ1xgsb7kSrI",heb:false},
+  {n:"SPADA Clermont-Ferrand",c:"asile",d:"63",v:"Clermont-Ferrand",a:"13 Av. Edouard Michelin, 63100",t:"+33473143600",lat:45.782467,lng:3.0973338,pid:"ChIJfdcuw9cb90cRZ1n8REnBQa4",heb:false},
+  {n:"Association CeCler — CADA",c:"asile",d:"63",v:"Royat",a:"4bis Av. Pasteur, 63130",t:"+33473256525",lat:45.7645039,lng:3.0473758,pid:"ChIJD7V_J0ca90cRQd_OoIL9X2I",heb:true},
+  {n:"Association CeCler — Hébergement (siège)",c:"asile",d:"63",v:"Clermont-Ferrand",a:"6 Imp. des Rouges Gorges, 63100",t:"+33473256525",lat:45.7948433,lng:3.1001187,pid:"ChIJLYW94FEZ90cRkgMUCN_1wag",heb:true},
+  {n:"Adoma — Résidence Cébazat Peupliers (asile)",c:"adoma",d:"63",v:"Cébazat",a:"125 Av. de la République, 63118",t:"+33473245968",lat:45.820254,lng:3.1083579,pid:"ChIJhc3HDCsZ90cRGGWY-GgqPi8",heb:true},
+  {n:"Adoma — Résidence Clermont L'Arverne",c:"adoma",d:"63",v:"Clermont-Ferrand",a:"67 Rue du Cheval, 63100",t:"+33473244574",lat:45.8071218,lng:3.1027372,pid:"ChIJQd_jizYZ90cRlVLQ_0POHIM",heb:true},
+  {n:"Adoma — Rue Bansac",c:"adoma",d:"63",v:"Clermont-Ferrand",a:"32 Rue Bansac, 63000",t:"+33473925853",lat:45.7769803,lng:3.0910592,pid:"ChIJnZxiieUb90cRNfHbCfOhdWU",heb:true},
+  {n:"ANEF 03-63 — CHRS L'Escale",c:"chrs",d:"63",v:"Clermont-Ferrand",a:"46 Av. Jean Mermoz, 63100",t:"+33473986800",lat:45.787982,lng:3.124104,pid:"ChIJo8JtcgUc90cRdezWhyPr1i0",heb:true},
+  {n:"ANEF 03-63 — Siège (Assoc. d'Entraide)",c:"chrs",d:"63",v:"Clermont-Ferrand",a:"27 Rue Montlosier, 63000",t:"+33473145150",lat:45.7814436,lng:3.0877181,pid:"ChIJAe4bP9wb90cR50oMASJ64XI",heb:false},
+  {n:"ANEF 63 — SIAO 115",c:"chrs",d:"63",v:"Clermont-Ferrand",a:"51 Rue Chappe, 63100",t:"+33473746600",lat:45.7872628,lng:3.1241995,pid:"ChIJp-chiPwb90cRu3vrCMbh9IM",heb:false},
+  {n:"ANEF 63 — SIAO / Urgences",c:"chrs",d:"63",v:"Clermont-Ferrand",a:"2 Rue Félix Mézard, 63000",t:"+33473162360",lat:45.8158386,lng:3.1132342,pid:"ChIJAQCwOdIe90cREBe09oez7tI",heb:false},
+  {n:"ProjeToit — ANEF 03-63",c:"chrs",d:"63",v:"Clermont-Ferrand",a:"351 Bd Étienne Clémentel, 63100",t:"+33443110935",lat:45.8165678,lng:3.109061,pid:"ChIJc4sL4qUZ90cRrJN0Do2Iodk",heb:true},
+  {n:"Accueil de Jour",c:"asso",d:"63",v:"Clermont-Ferrand",a:"12 Rue Emilienne Goumy, 63000",t:"+33473910400",lat:45.7858579,lng:3.0890837,pid:"ChIJe9VuhgQb90cRWP-a5yakeCU",heb:false},
+  {n:"A.P.A.R.T.",c:"chrs",d:"63",v:"Clermont-Ferrand",a:"64 Av. Léon Blum, 63000",t:"+33473266492",lat:45.7685324,lng:3.0945536,pid:"ChIJ5ypvxGcb90cRUhJLGk7xOyc",heb:true},
+  {n:"Habitat et Humanisme",c:"chrs",d:"63",v:"Clermont-Ferrand",a:"35 Rue du Pré la Reine, 63000",t:"+33473369246",lat:45.7845476,lng:3.1149498,pid:"ChIJ__8_lAIc90cRLTfMZy5kcdU",heb:true},
+  {n:"ANRAS — DDAEOMI 63 (mineurs non accompagnés)",c:"enfance",d:"63",v:"Clermont-Ferrand",a:"15 Rue Gaultier de Biauzat, 63000",t:"+33473393485",lat:45.7814906,lng:3.0830359,pid:"ChIJxYwF5BQb90cR8nwuieL7Xqo",heb:true},
+  {n:"ANEF 63 — Foyer Éducatif",c:"enfance",d:"63",v:"Clermont-Ferrand",a:"56 Rue Auger, 63100",t:"+33473922799",lat:45.7834959,lng:3.1089194,pid:"ChIJOQw6yOYb90cRQgJjr36r-3s",heb:true},
+  {n:"ANEF 63 — AEMO",c:"enfance",d:"63",v:"Clermont-Ferrand",a:"15 Rue Fontgieve, 63000",t:"+33473319899",lat:45.7807449,lng:3.0810364,pid:"ChIJAe4bP9wb90cRZbu1iu-LwrA",heb:false},
+  {n:"Alteris — Maison d'accueil La Raye Dieu",c:"enfance",d:"63",v:"Clermont-Ferrand",a:"16 Allée N, 63000",t:"+33473142000",lat:45.7694279,lng:3.1016765,pid:"ChIJR-rYVPQb90cRYtshaxHc1NU",heb:true},
+  {n:"Alteris — Dôme Dore Clair Matin",c:"enfance",d:"63",v:"Chamalières",a:"3 Rue des Poulignes, 63400",t:"+33473361950",lat:45.7767339,lng:3.0574791,pid:"ChIJxcgakjEa90cRlm9ljCVQsck",heb:true},
+  {n:"Alteris — La Cordée",c:"enfance",d:"63",v:"Clermont-Ferrand",a:"2 Rue de la Morée, 63000",t:"+33473371952",lat:45.7819278,lng:3.0811833,pid:"ChIJzdgTHtwb90cRjq8GdLQV_pw",heb:true},
+  {n:"Centre de l'Enfance et de la Famille",c:"enfance",d:"63",v:"Chamalières",a:"22 Bd Gambetta, 63400",t:"+33473176300",lat:45.7684726,lng:3.071823,pid:"ChIJN0ujIsgb90cRKy0MJNwGrlI",heb:true},
+  {n:"Maison d'Enfants — Château des Quayres",c:"enfance",d:"63",v:"Laps",a:"850 Rue des Quayres, 63270",t:"+33473692939",lat:45.6559314,lng:3.2474754,pid:"ChIJdeREwXD89kcRM0HfPhbslBw",heb:true},
+  {n:"Assoc. Protection de l'Enfance",c:"enfance",d:"63",v:"Clermont-Ferrand",a:"21 Rue Jean Richepin, 63000",t:"+33473292929",lat:45.7817538,lng:3.0855526,pid:"ChIJn5-RreAb90cRVML6Y2uHSk4",heb:false},
+  {n:"ADEPAPE 63",c:"enfance",d:"63",v:"Clermont-Ferrand",a:"58 Av. de l'Union Soviétique, 63000",t:"+33473291185",lat:45.7799242,lng:3.1025072,pid:"ChIJyVvo0ukb90cRVjuWpEyWGWg",heb:false},
+  {n:"Résidence Le Phare (FJT)",c:"fjt",d:"63",v:"Clermont-Ferrand",a:"7 Av. de l'Union Soviétique, 63000",t:"+33473924640",lat:45.7778247,lng:3.0972248,pid:"ChIJf5Jgivob90cRk3T8KU_LP90",heb:true},
+  {n:"Croix-Rouge — Unité locale Clermont",c:"asso",d:"63",v:"Clermont-Ferrand",a:"21 Rue Jean Richepin, 63000",t:"+33473926855",lat:45.781808,lng:3.085435,pid:"ChIJN6CRreAb90cRcWQ91CBCTHU",heb:false},
+  {n:"Croix-Rouge — Délégation Puy-de-Dôme",c:"asso",d:"63",v:"Clermont-Ferrand",a:"23 Bd Jean Moulin, 63000",t:"+33422217986",lat:45.775567,lng:3.118827,pid:"ChIJf5nDLhcc90cRQza3Z-EGvUM",heb:false},
+  {n:"Secours Catholique — Délégation Auvergne",c:"asso",d:"63",v:"Clermont-Ferrand",a:"133 Av. de la République, 63100",t:"+33473982737",lat:45.7899274,lng:3.1103425,pid:"ChIJ5acoD6se90cRCXD6pZLMW54",heb:false},
+  {n:"Secours Catholique — L'Escale",c:"asso",d:"63",v:"Clermont-Ferrand",a:"1 Bd Paul Pochet Lagaye, 63000",t:"+33415816970",lat:45.7634286,lng:3.0992014,pid:"ChIJ6X60tp8b90cRjuToCWaIqkc",heb:false},
+  {n:"Secours Catholique — La Maison (Gerzat)",c:"asso",d:"63",v:"Gerzat",a:"25 Rue du 4 Septembre, 63360",t:"+33473246351",lat:45.8229435,lng:3.1433221,pid:"ChIJ36ruFy8f90cRnh6fvcGNy08",heb:false},
+  {n:"Secours Catholique — L'Agora",c:"asso",d:"63",v:"Clermont-Ferrand",a:"1 Rue Dr Vigenaud, 63000",t:"+33980371534",lat:45.764433,lng:3.0975221,pid:"ChIJeYt-wVMb90cRTFTHnEVWtq8",heb:false},
+  {n:"Restos du Cœur — Siège Puy-de-Dôme",c:"asso",d:"63",v:"Clermont-Ferrand",a:"2 Rue Cuvier, 63000",t:"+33473981010",lat:45.786404,lng:3.0881617,pid:"ChIJ76CFNaQZ90cR7Wa4UYrh5c8",heb:false},
+  {n:"ADEF Riom — Emploi Solidaire",c:"asso",d:"63",v:"Riom",a:"10 Rue Amable Faucon, 63200",t:"+33473971681",lat:45.8872248,lng:3.1120208,pid:"ChIJPyPBniYi90cR7JJGbgiMKQU",heb:false},
+  {n:"Accueil d'urgence — CCAS Issoire",c:"asso",d:"63",v:"Issoire",a:"Imp. Pestalozzi, 63500",t:null,lat:45.5484717,lng:3.253457,pid:"ChIJhwODAQBX9kcRSgUr99yVx0I",heb:true},
+  {n:"L'Escapade (Issoire)",c:"asso",d:"63",v:"Issoire",a:"Bd Triozon Bayle, 63500",t:"+33473966756",lat:45.542739,lng:3.2507804,pid:"ChIJcSt1BA9W9kcRQzRraROyf5s",heb:false},
+  {n:"Forum réfugiés — CPH de Moulins",c:"asile",d:"03",v:"Moulins",a:"Résidence Nomazy, Bd de Nomazy bât. H, 03000",t:"+33470432656",lat:46.539598,lng:3.338301,pid:"ChIJPxnmlCsf8UcRIXIzOEkK5S0",heb:true},
+  {n:"CADA Solstïs",c:"asile",d:"03",v:"Montluçon",a:"91 Bd de Courtais, 03100",t:null,lat:46.3412733,lng:2.6067556,pid:"ChIJ68IioNyn8EcRoB5-9UrKGf8",heb:true},
+  {n:"Adoma — Résidence Vichy Claudius Petit",c:"adoma",d:"03",v:"Vichy",a:"76 Av. des Célestins, 03200",t:"+33470984339",lat:46.1241767,lng:3.4298156,pid:"ChIJFSaqew_N9kcRA4tArKjfRbI",heb:true},
+  {n:"Adoma — Résidence Cusset Mille Pertuis",c:"adoma",d:"03",v:"Cusset",a:"64 Rue Antoinette Mizon, 03300",t:"+33470311687",lat:46.1372601,lng:3.4493985,pid:"ChIJHyg9E-jM9kcRFRongnUKpNU",heb:true},
+  {n:"Viltaïs — CHRS & Hébergement d'urgence Moulins",c:"chrs",d:"03",v:"Moulins",a:"51 Av. Meunier, 03000",t:"+33470351180",lat:46.5581356,lng:3.3346053,pid:"ChIJGwAsCzwc8UcR4be9ml1fFn4",heb:true},
+  {n:"Viltaïs — Résidence @nima",c:"chrs",d:"03",v:"Moulins",a:"1 Rue des Champins, 03000",t:"+33470482500",lat:46.5466865,lng:3.3373202,pid:"ChIJd_gTNyAc8UcRst53cZlIGQM",heb:true},
+  {n:"Viltaïs — Accueil Montluçon",c:"chrs",d:"03",v:"Montluçon",a:"8 Rue Ernest Montuses, 03100",t:null,lat:46.3231404,lng:2.6178162,pid:"ChIJz6747Vip8EcRC6Fpoe1T8II",heb:false},
+  {n:"ANEF 03-63 — Vichy",c:"chrs",d:"03",v:"Vichy",a:"11 Pl. Jean Epinat, 03200",t:"+33470314488",lat:46.129739,lng:3.427527,pid:"ChIJfZWyzzfN9kcRu6NoWdUW8Rw",heb:false},
+  {n:"Averpahm — Rue Girard",c:"asso",d:"03",v:"Vichy",a:"6 Rue Girard, 03200",t:"+33470320973",lat:46.120936,lng:3.4308451,pid:"ChIJX4xMtQDN9kcRx4LZIxdngy0",heb:false},
+  {n:"Averpahm — Rue du Vernet",c:"asso",d:"03",v:"Vichy",a:"21 Rue du Vernet, 03200",t:"+33470972020",lat:46.1187629,lng:3.4374506,pid:"ChIJ4-HhbVXM9kcR8aMUN06E9a4",heb:false},
+  {n:"Maison de la Solidarité",c:"asso",d:"03",v:"Montluçon",a:"27 Av. du 8 Mai 1945, 03100",t:null,lat:46.3428379,lng:2.6086145,pid:"ChIJK9jUzsSn8EcR-rriLuYhdHk",heb:false},
+  {n:"AGAT — Assoc. Gestion Albert Thomas",c:"asso",d:"03",v:"Montluçon",a:"89 Av. Albert Thomas, 03100",t:null,lat:46.3546552,lng:2.5882366,pid:"ChIJvzC_iYyn8EcRtsbgy0yp8TI",heb:true},
+  {n:"Foyer Départemental de l'Enfance",c:"enfance",d:"03",v:"Moulins",a:"70 Rue de la Motte, 03000",t:"+33470462314",lat:46.5780492,lng:3.3389126,pid:"ChIJvXR6M1wc8UcR7HHvVvS-ptA",heb:true},
+  {n:"Maison d'Enfants St-Exupéry",c:"enfance",d:"03",v:"Moulins",a:"28 Rue des Remparts, 03000",t:"+33470440389",lat:46.5709877,lng:3.3316462,pid:"ChIJa_6ehkUc8UcR3DA3m3s9HhA",heb:true},
+  {n:"ADSEA Allier",c:"enfance",d:"03",v:"Moulins",a:"44 Rue des Tanneries, 03000",t:"+33689348769",lat:46.5661675,lng:3.337308,pid:"ChIJ90QT9kwc8UcRfLEU4oLpBqM",heb:false},
+  {n:"Association Le Cap — Foyer enfance",c:"enfance",d:"03",v:"Montluçon",a:"87 ter Bd de Courtais, 03100",t:"+33470057234",lat:46.3408214,lng:2.607271,pid:"ChIJ8d5NZNun8EcRfNW5D22Ppqc",heb:true},
+  {n:"Association Le Cap — Rue Marcel Sembat",c:"enfance",d:"03",v:"Montluçon",a:"18 Rue Marcel Sembat, 03100",t:"+33470285439",lat:46.3406899,lng:2.5954784,pid:"ChIJxUZizuWn8EcRaMbDvVjoDHE",heb:true},
+  {n:"Parentèle — Maison des Familles",c:"enfance",d:"03",v:"Montluçon",a:"8 Rue Elisée Reclus, 03100",t:"+33470056266",lat:46.3429537,lng:2.6040464,pid:"ChIJs56A0MKn8EcRN951y8YltG8",heb:false},
+  {n:"FJT Le Tremplin",c:"fjt",d:"03",v:"Moulins",a:"60 Rue de Bourgogne, 03000",t:"+33470354200",lat:46.567485,lng:3.338587,pid:"ChIJXxO5o0Ec8UcRSsaSOMLZG2k",heb:true},
+  {n:"FJT Victoria",c:"fjt",d:"03",v:"Vichy",a:"13 Rue de l'Emballage, 03200",t:"+33470965550",lat:46.130268,lng:3.4309575,pid:"ChIJ4Q2PGBrN9kcRScW_SFI3zUI",heb:true},
+  {n:"FJT Victoria — Résidence Lardy",c:"fjt",d:"03",v:"Vichy",a:"98 Rue Maréchal Lyautey, 03200",t:"+33470965550",lat:46.120977,lng:3.425049,pid:"ChIJ3XUueJbN9kcR_BXNxvIQuzg",heb:true},
+  {n:"Habitat Jeunes Montluçon",c:"fjt",d:"03",v:"Montluçon",a:"5 Rue du Canal, 03100",t:"+33470033444",lat:46.344473,lng:2.599807,pid:"ChIJY9pvbOmn8EcRpU48tdKYVwc",heb:true},
+  {n:"FJT L'Escale (Montluçon)",c:"fjt",d:"03",v:"Montluçon",a:"20 Av. de Fontbouillant, 03100",t:"+33470033444",lat:46.32798,lng:2.5793659,pid:"ChIJ8egQt_gH-kcRGu9bnpOLX4E",heb:true}
+];
+
+const CAT_LABEL={asile:"Asile / Réfugiés",chrs:"CHRS / Urgence",adoma:"Résidence sociale",enfance:"Enfance / Mineurs",fjt:"Jeunes travailleurs",asso:"Assos / Partenaires"};
+const CAT_SHORT={asile:"Asile",chrs:"CHRS",adoma:"Adoma",enfance:"Enfance",fjt:"FJT",asso:"Asso"};
+const DEP_NAME={"63":"Puy-de-Dôme","03":"Allier"};
+const DEP_DE={"63":"du Puy-de-Dôme","03":"de l'Allier"};
+
+/* ---------------- Cadence (jours cumulés depuis 1er envoi) ---------------- */
+const GAP={1:3,2:4,3:7};            // après étape 1 → +3j ; après 2 → +4j (J+7) ; après 3 → +7j (J+14)
+const STEP_NAME=["Contact","Relance 1","Relance 2","Relance 3"];
+
+/* ---------------- Séquence mail (meilleures pratiques cold email) ---------------- */
+function sig(cf){
+  let s="\n\n"+ (cf.name||"") ;
+  if(cf.company) s+="\n"+cf.company;
+  if(cf.phone) s+="\n"+cf.phone;
+  if(cf.email) s+="\n"+cf.email;
+  if(cf.site) s+="\n"+cf.site;
+  if(cf.stop) s+="\n\n— Si vous ne souhaitez plus recevoir mes messages, répondez « STOP ».";
+  return s;
+}
+function templates(o,cf){
+  const dep=DEP_NAME[o.d];
+  const S=sig(cf);
+  const objInit="Punaises de lit — traitement thermique ("+o.v+")";
+  return [
+    // 0 — Contact
+    {subject:objInit,
+     body:"Madame, Monsieur,\n\nNous accompagnons plusieurs structures sociales "+DEP_DE[o.d]+" sur le traitement des punaises de lit, et je me permets de vous contacter à ce sujet.\n\nNotre différence : un traitement thermique (tente professionnelle) qui détruit œufs et adultes en un seul passage, sans produit chimique — un point essentiel dans des lieux accueillant des enfants et des personnes vulnérables. Pas de relogement sur plusieurs jours, intervention discrète.\n\nSeriez-vous disponible pour un échange de 10 minutes cette semaine ? Je peux aussi passer réaliser un diagnostic gratuit sur site."+S},
+    // 1 — Relance 1 (bump court, même fil)
+    {subject:"Re : "+objInit,
+     body:"Madame, Monsieur,\n\nJe remonte simplement mon message en haut de votre boîte. Le traitement thermique évite le principal casse-tête de vos hébergements : traiter sans reloger sur plusieurs jours et sans produit dans les chambres.\n\nUn créneau de 10 minutes pour en parler ?"+S},
+    // 2 — Relance 2 (angle valeur différent)
+    {subject:"Éviter la réinfestation — punaises de lit",
+     body:"Madame, Monsieur,\n\nLe vrai enjeu avec les punaises de lit n'est pas de les traiter une fois, mais d'éviter qu'elles passent d'une chambre à l'autre. C'est là que le thermique fait la différence : tous les stades détruits, y compris les œufs que les insecticides laissent souvent survivre.\n\nNous sommes locaux (63/03), réactifs, certifiés Certibiocide et CertiPunaises. Nous pouvons aussi fournir un kit de prévention multilingue pour vos résidents.\n\nJe vous propose un diagnostic gratuit : quel jour vous conviendrait ?"+S},
+    // 3 — Relance 3 (break-up)
+    {subject:"Dois-je clôturer votre dossier ?",
+     body:"Madame, Monsieur,\n\nSans retour de votre part, je n'insisterai pas davantage. Je reste néanmoins disponible dès que le sujet des punaises de lit se présentera dans vos structures — un simple message suffira pour une intervention rapide.\n\nBien à vous, et bonne continuation."+S}
+  ];
+}
+
+/* ---------------- Stockage ---------------- */
+const mem={};
+const store={get(k){try{const v=localStorage.getItem(k);return v===null?(k in mem?mem[k]:null):v;}catch(e){return k in mem?mem[k]:null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){mem[k]=v;}}};
+const keyFor=o=>"pss_"+o.pid;
+function loadState(o){try{return JSON.parse(store.get(keyFor(o))||"{}");}catch(e){return {};}}
+function saveState(o,s){store.set(keyFor(o),JSON.stringify(s));}
+function loadCfg(){try{return JSON.parse(store.get("pss_config")||"{}");}catch(e){return {};}}
+function saveCfg(c){store.set("pss_config",JSON.stringify(c));}
+
+/* ---------------- Dates ---------------- */
+const DAY=86400000;
+const today0=()=>{const d=new Date();d.setHours(0,0,0,0);return d.getTime();};
+function fmtDate(ts){const d=new Date(ts);return String(d.getDate()).padStart(2,'0')+"/"+String(d.getMonth()+1).padStart(2,'0');}
+// étape courante à envoyer (0..3) ; renvoie null si séquence finie/gagnée
+function currentStep(st){ if(st.won) return null; const s=st.stage||0; return s>3?null:s; }
+function dueTs(st){ // date à laquelle l'étape courante doit partir
+  const step=currentStep(st); if(step===null) return null;
+  if(step===0) return today0();               // contact : dès que l'email est là
+  return (st.firstSent||today0()) + cumGap(step)*DAY;
+}
+function cumGap(step){ let t=0; for(let i=1;i<=step;i++) t+=GAP[i]||0; return t; }
+function isDue(st){ const step=currentStep(st); if(step===null||!st.email) return false; if(step===0) return true; return dueTs(st)<=today0(); }
+
+/* ---------------- État UI ---------------- */
+let userPos=null,fDep="all",fCat="all",query="",onlyRel=false;
+
+function haversine(a,b,c,d){const R=6371,r=Math.PI/180,dLat=(c-a)*r,dLng=(d-b)*r;const x=Math.sin(dLat/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin(dLng/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+const fmtDist=km=>km<1?Math.round(km*1000)+" m":km.toFixed(km<10?1:0)+" km";
+const fmtTel=t=>t.replace('+33','0').replace(/(\d)(\d\d)(\d\d)(\d\d)(\d\d)/,'$1 $2 $3 $4 $5');
+
+/* ---------------- Toast ---------------- */
+let toastT;
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),1600);}
+
+/* ---------------- Filtres ---------------- */
+function buildFilters(){
+  const deps=document.getElementById('deps');
+  deps.innerHTML=[["all","Tous secteurs"],["63","Puy-de-Dôme (63)"],["03","Allier (03)"]].map(([k,l])=>`<button class="chip ${k==='all'?'active':''}" data-dep="${k}">${l}</button>`).join('');
+  deps.querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{fDep=ch.dataset.dep;deps.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));ch.classList.add('active');render();});
+  const cats=document.getElementById('cats');
+  cats.innerHTML=[["all","Toutes structures"],...Object.keys(CAT_LABEL).map(k=>[k,CAT_LABEL[k]])].map(([k,l])=>{const dot=k==='all'?'':`<span class="dot" style="background:var(--cat-${k})"></span>`;return `<button class="chip ${k==='all'?'active':''}" data-cat="${k}">${dot}${l}</button>`;}).join('');
+  cats.querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{fCat=ch.dataset.cat;cats.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));ch.classList.add('active');render();});
+}
+
+/* ---------------- Barre relances ---------------- */
+function refreshRelBar(){
+  let n=0; DATA.forEach(o=>{if(isDue(loadState(o)))n++;});
+  const bar=document.getElementById('relbar');
+  document.getElementById('relCount').textContent=n;
+  const go=document.getElementById('relGo');
+  if(n>0){bar.classList.remove('none');go.style.display='inline';bar.onclick=()=>{onlyRel=true;render();window.scrollTo({top:0});};bar.querySelector('span').textContent='🔥 Relances à envoyer';}
+  else{bar.classList.add('none');go.style.display='none';bar.onclick=null;bar.querySelector('span').textContent='Aucune relance en attente aujourd\u2019hui';}
+}
+
+/* ---------------- Rendu ---------------- */
+function render(){
+  const list=document.getElementById('list');
+  let items=DATA.map((o,i)=>({o,i,st:loadState(o)}));
+  if(fDep!=="all")items=items.filter(x=>x.o.d===fDep);
+  if(fCat!=="all")items=items.filter(x=>x.o.c===fCat);
+  if(query){const q=query.toLowerCase();items=items.filter(x=>(x.o.n+" "+x.o.v+" "+x.o.a).toLowerCase().includes(q));}
+  if(onlyRel)items=items.filter(x=>isDue(x.st));
+
+  if(userPos){items.forEach(x=>x.dist=haversine(userPos.lat,userPos.lng,x.o.lat,x.o.lng));items.sort((a,b)=>a.dist-b.dist);}
+  else if(onlyRel){items.sort((a,b)=>(dueTs(a.st)||0)-(dueTs(b.st)||0));}
+
+  if(onlyRel){
+    if(!document.getElementById('relClear')){
+      const c=document.createElement('button');c.id='relClear';c.className='chip active rel';c.style.margin='0 0 10px';c.textContent='✕ Filtre relances actif — tout afficher';
+      c.onclick=()=>{onlyRel=false;render();};
+      list.parentNode.insertBefore(c,list);
+    }
+  } else { const c=document.getElementById('relClear'); if(c)c.remove(); }
+
+  document.getElementById('cTotal')&&(document.getElementById('cTotal').textContent=DATA.length);
+
+  if(!items.length){list.innerHTML=`<div class="empty">${onlyRel?'Aucune relance à envoyer pour le moment. 👍':'Aucune structure ne correspond.'}</div>`;refreshRelBar();return;}
+
+  const cf=loadCfg();
+  list.innerHTML=items.map(({o,dist,st})=>{
+    const done=st.done?'done':(st.won?'won':'');
+    const email=st.email||"";
+    const notes=st.notes||"";
+    const distTag=(userPos&&dist!=null)?`<span class="dist">${fmtDist(dist)}</span>`:'';
+    const hebTag=o.heb?`<span class="tag heb">Hébergement</span>`:'';
+    const wonTag=st.won?`<span class="tag won">RDV ✓</span>`:'';
+    const telLine=o.t?`<div class="tel">${fmtTel(o.t)}</div>`:`<div class="tel none">☎ N° absent — voir email / Maps</div>`;
+    const maps=`https://www.google.com/maps/dir/?api=1&destination=${o.lat},${o.lng}${o.pid?`&destination_place_id=${o.pid}`:''}`;
+    const call=o.t?`<a class="call" href="tel:${o.t}"><span class="ic">📞</span>Appeler</a>`:`<span class="call" style="opacity:.35"><span class="ic">📞</span>—</span>`;
+    const mail=email?`<a class="mail" href="mailto:${email}"><span class="ic">✉️</span>Mail</a>`:`<button class="mail disabled" data-act="expand" data-pid="${o.pid}"><span class="ic">✉️</span>+ Email</button>`;
+
+    // bandeau statut prospection
+    let pstat;
+    const step=currentStep(st);
+    if(st.won) pstat=`<div class="pstat win"><span class="pill">✓</span> RDV obtenu — séquence stoppée</div>`;
+    else if(!email) pstat=`<div class="pstat new"><span class="pill">＋</span> Ajoute l'email pour lancer la prospection</div>`;
+    else if(step===null) pstat=`<div class="pstat wait"><span class="pill">fin</span> Séquence terminée — sans retour</div>`;
+    else if(isDue(st)) pstat=`<div class="pstat todo"><span class="pill">${STEP_NAME[step]}</span> À envoyer maintenant</div>`;
+    else pstat=`<div class="pstat wait"><span class="pill">${STEP_NAME[step]}</span> Prévue le ${fmtDate(dueTs(st))}</div>`;
+
+    // bloc séquence (si email présent et pas gagné/fini)
+    let seqBlock="";
+    if(email && step!==null && !st.won){
+      const stepsHtml=STEP_NAME.map((nm,idx)=>{
+        let cls=''; if(idx<(st.stage||0))cls='done'; else if(idx===step)cls='next';
+        return `<div class="step ${cls}">${idx<(st.stage||0)?'✓ ':''}${nm}</div>`;
+      }).join('');
+      const tpl=templates(o,cf)[step];
+      const dueTxt=isDue(st)?'prêt à envoyer':'prévu '+fmtDate(dueTs(st));
+      seqBlock=`
+        <div class="seq">
+          <h4>Séquence de prospection — ${dueTxt}</h4>
+          <div class="steps">${stepsHtml}</div>
+          <div class="seqrow">
+            <button class="b-open" data-act="open" data-pid="${o.pid}">✉️ Ouvrir ${STEP_NAME[step]}</button>
+            <button class="b-copy" data-act="copy" data-pid="${o.pid}">⧉ Copier</button>
+          </div>
+          <button class="b-sent" data-act="sent" data-pid="${o.pid}">Marqué envoyé → passer à l'étape suivante</button>
+          <div class="seq-two">
+            <button class="b-win" data-act="won" data-pid="${o.pid}">✓ RDV obtenu (stop)</button>
+            ${(st.stage||0)>0?`<button class="b-reset" data-act="resetseq" data-pid="${o.pid}">↺</button>`:''}
+          </div>
+          <p class="hint">${step===0?'Le mail de contact ouvre ta messagerie pré-remplie. « Copier » colle objet + texte où tu veux.':'Espacement optimal respecté (J+3 / J+7 / J+14). Un objet différent en relance 2 relance l\u2019attention.'}</p>
+        </div>`;
+    } else if(email && st.won){
+      seqBlock=`<div class="seq"><h4>Objectif atteint 🎯</h4><p class="hint">Séquence arrêtée. Tu peux la relancer avec ↺ si besoin.</p><div class="seq-two"><button class="b-reset" data-act="resetseq" data-pid="${o.pid}" style="flex:1">↺ Relancer une séquence</button></div></div>`;
+    }
+
+    return `
+    <div class="card ${o.c} ${done}" data-pid="${o.pid}">
+      <div class="cardtop">
+        <div class="badges"><span class="tag dep">${o.d}</span><span class="tag ${o.c}">${CAT_SHORT[o.c]}</span>${hebTag}${wonTag}${distTag}</div>
+        <div class="name">${o.n}</div>
+        <div class="addr"><span class="city">${o.v}</span> — ${o.a}</div>
+        ${telLine}
+      </div>
+      ${pstat}
+      <div class="actions">${call}<a class="map" href="${maps}" target="_blank" rel="noopener"><span class="ic">🧭</span>Itinéraire</a>${mail}</div>
+      <button class="toggle" data-act="expand" data-pid="${o.pid}">＋ Email · séquence · notes</button>
+      <div class="more" data-more="${o.pid}">
+        <p class="fieldlbl">Email de la structure</p>
+        <input type="email" inputmode="email" autocapitalize="off" placeholder="contact@structure.fr" data-field="email" data-pid="${o.pid}" value="${email.replace(/"/g,'&quot;')}">
+        ${seqBlock}
+        <p class="fieldlbl" style="margin-top:12px">Notes</p>
+        <textarea placeholder="Interlocuteur, RDV, besoin punaises…" data-field="notes" data-pid="${o.pid}">${notes.replace(/</g,'&lt;')}</textarea>
+        <div class="seq-two" style="margin-top:10px">
+          <button class="b-reset" style="flex:1" data-act="done" data-pid="${o.pid}">${st.done?'✓ Marqué traité — annuler':'Marquer traité / archiver'}</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  bindCards(cf);
+  refreshRelBar();
+}
+
+function buildMail(o,st,cf,stepOverride){
+  const step=(stepOverride!=null)?stepOverride:currentStep(st);
+  const tpl=templates(o,cf)[step==null?0:step];
+  return tpl;
+}
+
+function bindCards(cf){
+  document.querySelectorAll('[data-act="expand"]').forEach(b=>b.onclick=e=>{e.preventDefault();const m=document.querySelector(`[data-more="${b.dataset.pid}"]`);if(m)m.classList.toggle('open');});
+  document.querySelectorAll('[data-field]').forEach(inp=>inp.oninput=()=>{const o=DATA.find(x=>x.pid===inp.dataset.pid);const st=loadState(o);st[inp.dataset.field]=inp.value;saveState(o,st);if(inp.dataset.field==='email'){refreshRelBar();}});
+  // ouvrir mail
+  document.querySelectorAll('[data-act="open"]').forEach(b=>b.onclick=()=>{
+    const o=DATA.find(x=>x.pid===b.dataset.pid);const st=loadState(o);
+    if(!st.email){toast('Ajoute d\u2019abord l\u2019email');return;}
+    const tpl=buildMail(o,st,cf);
+    location.href=`mailto:${st.email}?subject=${encodeURIComponent(tpl.subject)}&body=${encodeURIComponent(tpl.body)}`;
+  });
+  // copier
+  document.querySelectorAll('[data-act="copy"]').forEach(b=>b.onclick=async()=>{
+    const o=DATA.find(x=>x.pid===b.dataset.pid);const st=loadState(o);
+    const tpl=buildMail(o,st,cf);
+    const txt="Objet : "+tpl.subject+"\n\n"+tpl.body;
+    try{await navigator.clipboard.writeText(txt);toast('Mail copié ✓');}
+    catch(e){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Mail copié ✓');}
+  });
+  // marquer envoyé → étape suivante
+  document.querySelectorAll('[data-act="sent"]').forEach(b=>b.onclick=()=>{
+    const o=DATA.find(x=>x.pid===b.dataset.pid);const st=loadState(o);
+    if(!(st.stage>0)&&!st.firstSent)st.firstSent=today0();
+    st.stage=(st.stage||0)+1;
+    saveState(o,st);
+    toast(st.stage>3?'Séquence terminée':'→ '+STEP_NAME[st.stage]+' programmée');
+    render();
+  });
+  // RDV obtenu
+  document.querySelectorAll('[data-act="won"]').forEach(b=>b.onclick=()=>{const o=DATA.find(x=>x.pid===b.dataset.pid);const st=loadState(o);st.won=true;saveState(o,st);toast('🎯 RDV — bravo');render();});
+  // reset séquence
+  document.querySelectorAll('[data-act="resetseq"]').forEach(b=>b.onclick=()=>{const o=DATA.find(x=>x.pid===b.dataset.pid);const st=loadState(o);delete st.stage;delete st.firstSent;delete st.won;saveState(o,st);toast('Séquence réinitialisée');render();});
+  // archiver
+  document.querySelectorAll('[data-act="done"]').forEach(b=>b.onclick=()=>{const o=DATA.find(x=>x.pid===b.dataset.pid);const st=loadState(o);st.done=!st.done;saveState(o,st);render();});
+}
+
+/* ---------------- Géoloc ---------------- */
+document.getElementById('geoBtn').onclick=function(){
+  const btn=this;
+  if(userPos){userPos=null;btn.classList.remove('on');btn.textContent='📍 Proximité';render();return;}
+  btn.textContent='… localisation';
+  if(!navigator.geolocation){btn.textContent='📍 Indispo';return;}
+  navigator.geolocation.getCurrentPosition(
+    p=>{userPos={lat:p.coords.latitude,lng:p.coords.longitude};btn.classList.add('on');btn.textContent='📍 Trié';render();},
+    ()=>{btn.textContent='📍 Refusé';setTimeout(()=>btn.textContent='📍 Proximité',2000);},
+    {enableHighAccuracy:true,timeout:10000,maximumAge:60000});
+};
+document.getElementById('q').oninput=e=>{query=e.target.value.trim();render();};
+
+/* ---------------- Réglages ---------------- */
+const modal=document.getElementById('modal');
+function openCfg(){const c=loadCfg();cf_name.value=c.name??'Idriss Ouali';cf_company.value=c.company??'ZAPEM — Dédale et Associés';cf_phone.value=c.phone??'';cf_email.value=c.email??'';cf_site.value=c.site??'';cf_stop.checked=c.stop!==false;modal.classList.add('open');}
+document.getElementById('gearBtn').onclick=openCfg;
+document.getElementById('cf_close').onclick=()=>modal.classList.remove('open');
+modal.onclick=e=>{if(e.target===modal)modal.classList.remove('open');};
+document.getElementById('cf_save').onclick=()=>{
+  saveCfg({name:cf_name.value.trim(),company:cf_company.value.trim(),phone:cf_phone.value.trim(),email:cf_email.value.trim(),site:cf_site.value.trim(),stop:cf_stop.checked});
+  modal.classList.remove('open');toast('Signature enregistrée ✓');render();
+};
+
+/* première ouverture : proposer de remplir la signature */
+buildFilters();
+render();
+if(!store.get("pss_config")){setTimeout(openCfg,400);}
+</script>
+</body>
+</html>
